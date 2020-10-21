@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/coronadata.dart';
@@ -95,6 +96,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  ContinentExp e;
+  _MyHomePageState({this.e}) {
+    this.e = ContinentExp.EUROPE;
+  }
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -109,22 +114,47 @@ class _MyHomePageState extends State<MyHomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body: FutureBuilder<CoronaData>(
-          future: fetchCoronaData(http.Client()),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) print(snapshot.error);
+        body: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: CupertinoSlidingSegmentedControl(
+                children: {
+                  ContinentExp.EUROPE:
+                      Text("Europe", style: TextStyle(fontSize: 18)),
+                  ContinentExp.AMERICA:
+                      Text("America", style: TextStyle(fontSize: 18)),
+                  ContinentExp.ASIA:
+                      Text("Asia", style: TextStyle(fontSize: 18))
+                },
+                onValueChanged: (ContinentExp _e) {
+                  setState(() {
+                    e = _e;
+                  });
+                },
+                groupValue: e,
+              ),
+            ),
+            Expanded(
+                child: FutureBuilder<CoronaData>(
+              future: fetchCoronaData(http.Client()),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) print(snapshot.error);
 
-            return snapshot.hasData
-                ? CountryList(
-                    records: snapshot.data.records
-                        .where((element) =>
-                            element.dateRep ==
-                            DateFormat('dd/MM/yyyy')
-                                .format(DateTime.now())
-                                .toString())
-                        .toList())
-                : Center(child: CircularProgressIndicator());
-          },
+                return snapshot.hasData
+                    ? CountryList(
+                        records: snapshot.data.records
+                            .where((element) =>
+                                element.dateRep ==
+                                    DateFormat('dd/MM/yyyy')
+                                        .format(DateTime.now())
+                                        .toString() &&
+                                element.continentExp == e)
+                            .toList())
+                    : Center(child: CircularProgressIndicator());
+              },
+            ))
+          ],
         ));
   }
 }
@@ -135,13 +165,17 @@ class CountryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-      ),
-      itemCount: records.length,
-      itemBuilder: (context, index) {
-        return CupertinoCard(stateName:records[index].countriesAndTerritories.toString());
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return GridView.count(
+          // Create a grid with 2 columns in portrait mode, or 3 columns in
+          // landscape mode.
+          crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
+          // Generate 100 widgets that display their index in the List.
+          children: List.generate(records.length, (index) {
+            return CupertinoCard(record: records[index]);
+          }),
+        );
       },
     );
   }

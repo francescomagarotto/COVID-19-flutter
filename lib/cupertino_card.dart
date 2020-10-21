@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'coronadata.dart';
+import 'country_info.dart';
 class CupertinoCard extends StatelessWidget {
-  CupertinoCard({Key key, this.stateName}) : super(key: key);
- String stateName;
+  CupertinoCard({Key key, this.record}) : super(key: key);
+  final Record record;
   @override
   Widget build(BuildContext context) {
+    String state = record.countriesAndTerritories.toString().split(".")[1].replaceAll("_", " ");
     return SafeArea(
         child: CupertinoButton(
           child: Container(
@@ -20,7 +24,7 @@ class CupertinoCard extends StatelessWidget {
             child: Container(
               margin: EdgeInsets.fromLTRB(15, 15, 0, 0),
               child: Text(
-                stateName.split(".")[1].replaceAll("_", " "),
+                state,
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -29,19 +33,9 @@ class CupertinoCard extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            showCupertinoDialog(
-              context: context,
-              builder: (BuildContext context) => CupertinoAlertDialog(
-                title: const Text('Card is clicked.'),
-                actions: <Widget>[
-                  CupertinoDialogAction(
-                    child: const Text('ok'),
-                    onPressed: () {
-                      Navigator.pop(context, 'ok');
-                    },
-                  ),
-                ],
-              ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CountryInfo(record: this.record)),
             );
           },
         ),
