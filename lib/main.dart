@@ -1,53 +1,19 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/coronadata.dart';
+import 'package:flutter_app/regione.dart';
 import 'package:flutter_app/cupertino_card.dart';
-import 'package:flutter_app/state_name.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-
+import 'dart:developer' as developer;
 void main() {
   runApp(MyApp());
 }
 
-/*class CountryData {
-  String dateRep;
-  String day;
-  String month, year;
-  int cases;
-  int deaths;
-  String countriesAndTerritories;
-  String countryterritoryCode;
-
-  CountryData({this.dateRep, this.day, this.month, this.year, this.cases,
-      this.deaths, this.countriesAndTerritories, this.countryterritoryCode});
-
-  factory CountryData.fromJson(Map<String, dynamic> json) {
-    return CountryData(
-        dateRep: json['dateRep'] as String,
-        day: json['day'] as String,
-        month: json['month'] as String,
-        year: json['year'] as String,
-        cases: json['cases'] as int,
-        deaths: json['deaths'] as int,
-        countriesAndTerritories: json['countriesAndTerritories'] as String,
-        countryterritoryCode: json['countryterritoryCode'] as String );
-  }
-}
-List<CountryData> parseCountryData(String responseBody) {
-
-  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
-  print(parsed["records"]);
-  return parsed["records"].map<CountryData>((json) => CountryData.fromJson(json)).toList();
-}*/
-Future<CoronaData> fetchCoronaData(http.Client client) async {
+Future<List<Regione>> fetchDatiRegione(http.Client client) async {
   final response = await client
-      .get('https://opendata.ecdc.europa.eu/covid19/casedistribution/json/');
+      .get('https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni-latest.json');
 
-  return compute(coronaDataFromJson, response.body);
+  return compute(regioneFromJson, response.body);
 }
 
 class MyApp extends StatelessWidget {
@@ -96,72 +62,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ContinentExp e;
-  _MyHomePageState({this.e}) {
-    this.e = ContinentExp.EUROPE;
-  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-        ),
-        body: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(10),
-              child: CupertinoSlidingSegmentedControl(
-                children: {
-                  ContinentExp.EUROPE:
-                      Text("Europe", style: TextStyle(fontSize: 18)),
-                  ContinentExp.AMERICA:
-                      Text("America", style: TextStyle(fontSize: 18)),
-                  ContinentExp.ASIA:
-                      Text("Asia", style: TextStyle(fontSize: 18))
-                },
-                onValueChanged: (ContinentExp _e) {
-                  setState(() {
-                    e = _e;
-                  });
-                },
-                groupValue: e,
-              ),
-            ),
-            Expanded(
-                child: FutureBuilder<CoronaData>(
-              future: fetchCoronaData(http.Client()),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) print(snapshot.error);
+    return MaterialApp(
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body:
+          FutureBuilder<List<Regione>>(
+            future: fetchDatiRegione(http.Client()),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return Text(snapshot.error);
+              if (snapshot.hasData) {
 
-                return snapshot.hasData
-                    ? CountryList(
-                        records: snapshot.data.records
-                            .where((element) =>
-                                element.dateRep ==
-                                    DateFormat('dd/MM/yyyy')
-                                        .format(DateTime.now())
-                                        .toString() &&
-                                element.continentExp == e)
-                            .toList())
-                    : Center(child: CircularProgressIndicator());
-              },
-            ))
-          ],
-        ));
+                return ListaRegioni(regioni: snapshot.data);
+              }
+              else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          )
+        ),
+      ),
+    );
   }
 }
 
-class CountryList extends StatelessWidget {
-  final List<Record> records;
-  CountryList({Key key, this.records}) : super(key: key);
+class ListaRegioni extends StatelessWidget {
+  List<Regione> regioni;
+  ListaRegioni({Key key, this.regioni}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -171,9 +104,8 @@ class CountryList extends StatelessWidget {
           // Create a grid with 2 columns in portrait mode, or 3 columns in
           // landscape mode.
           crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
-          // Generate 100 widgets that display their index in the List.
-          children: List.generate(records.length, (index) {
-            return CupertinoCard(record: records[index]);
+          children: List.generate(regioni.length, (index) {
+            return CupertinoCard(regione: regioni[index]);
           }),
         );
       },
