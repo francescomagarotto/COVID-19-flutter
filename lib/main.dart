@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/regione.dart';
 import 'package:flutter_app/cupertino_card.dart';
 import 'package:http/http.dart' as http;
-import 'dart:developer' as developer;
+
 void main() {
   runApp(MyApp());
 }
 
 Future<List<Regione>> fetchDatiRegione(http.Client client) async {
-  final response = await client
-      .get('https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni-latest.json');
+  final response = await client.get(
+      'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni-latest.json');
 
   return compute(regioneFromJson, response.body);
 }
@@ -62,31 +62,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
         length: 3,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
-          ),
-          body:
-          FutureBuilder<List<Regione>>(
-            future: fetchDatiRegione(http.Client()),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return Text(snapshot.error);
-              if (snapshot.hasData) {
-
-                return ListaRegioni(regioni: snapshot.data);
-              }
-              else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          )
-        ),
+            appBar: AppBar(
+              title: Text(widget.title),
+            ),
+            body: FutureBuilder<List<Regione>>(
+              future: fetchDatiRegione(http.Client()),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) return Text(snapshot.error);
+                if (snapshot.hasData) {
+                  return ListaRegioni(regioni: snapshot.data);
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
+            )),
       ),
     );
   }
