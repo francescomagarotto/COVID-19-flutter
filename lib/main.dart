@@ -69,20 +69,21 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
-          ),
-          body: FutureBuilder<List<Regione>>(
-            future: fetchDatiRegione(http.Client()),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return Text(snapshot.error);
-              if (snapshot.hasData) {
-                return ListaRegioni(regioni: snapshot.data);
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            },
-          )),
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: FutureBuilder<List<Regione>>(
+          future: fetchDatiRegione(http.Client()),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return Text(snapshot.error);
+            if (snapshot.hasData) {
+              return ListaRegioni(regioni: snapshot.data);
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+      ),
     );
   }
 }

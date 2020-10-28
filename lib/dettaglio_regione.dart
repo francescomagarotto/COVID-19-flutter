@@ -11,12 +11,14 @@ class DettaglioRegione extends StatelessWidget {
     Map<String, String> _datiGiornalieri = {
       "Decessi": regione.deceduti.toString(),
       "Nuovi casi": regione.nuoviPositivi.toString(),
-      "Guariti": regione.dimessiGuariti.toString()
+      "Guariti": regione.dimessiGuariti.toString(),
+      "Isolamento\ndomiciliare": regione.isolamentoDomiciliare.toString()
     };
     List<List<Color>> _colorCard = [
       [Colors.redAccent, Colors.redAccent[700]],
       [Colors.blue, Colors.deepPurple],
-      [Colors.green, Colors.teal]
+      [Colors.green, Colors.teal],
+      [Colors.orange, Colors.yellow[700]]
     ];
     return Scaffold(
         appBar: AppBar(
@@ -55,6 +57,7 @@ class DettaglioRegione extends StatelessWidget {
                 ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               ));
             }),
+            if (this.regione.note != null) _makeNote(this.regione.note),
             MaterialButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -62,5 +65,38 @@ class DettaglioRegione extends StatelessWidget {
                 child: Text('Go back!')),
           ],
         ));
+  }
+
+  Widget _makeNote(String text) {
+    text = text.replaceAll("e'", "è");
+    text = text.replaceRange(0, 1, text.characters.elementAt(0).toUpperCase());
+    return Card(
+        child: Container(
+      width: 1000,
+      height: 100,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [Colors.blue[800], Colors.blue[800]],
+          )),
+      padding: EdgeInsets.all(10),
+      child: Column(children: [
+        Align(
+            alignment: Alignment.centerLeft,
+            child: Text("Note",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.w800))),
+        Text(text,
+            textAlign: TextAlign.left,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w800)),
+      ]),
+    ));
   }
 }
