@@ -32,7 +32,10 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.red,
+        primaryColor: Colors.red,
+
+        // Define the default font family.
+        fontFamily: 'Georgia',
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
@@ -65,30 +68,27 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-            appBar: AppBar(
-              title: Text(widget.title),
-            ),
-            body: FutureBuilder<List<Regione>>(
-              future: fetchDatiRegione(http.Client()),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) return Text(snapshot.error);
-                if (snapshot.hasData) {
-                  return ListaRegioni(regioni: snapshot.data);
-                } else {
-                  return Center(child: CircularProgressIndicator());
-                }
-              },
-            )),
-      ),
+      home: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body: FutureBuilder<List<Regione>>(
+            future: fetchDatiRegione(http.Client()),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return Text(snapshot.error);
+              if (snapshot.hasData) {
+                return ListaRegioni(regioni: snapshot.data);
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            },
+          )),
     );
   }
 }
 
 class ListaRegioni extends StatelessWidget {
-  List<Regione> regioni;
+  final List<Regione> regioni;
   ListaRegioni({Key key, this.regioni}) : super(key: key);
 
   @override
