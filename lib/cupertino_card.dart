@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/regione.dart';
-import 'dart:ui' show ImageFilter;
 import 'regione.dart';
 import 'dettaglio_regione.dart';
 
@@ -38,7 +37,11 @@ class CupertinoCard extends StatelessWidget {
                       regione.denominazioneRegione.toUpperCase(),
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: width * 0.06,
+                        fontSize: width *
+                            ((MediaQuery.of(context).orientation ==
+                                    Orientation.landscape)
+                                ? 0.03
+                                : 0.06),
                         fontWeight: FontWeight.w800,
                       ),
                     )),

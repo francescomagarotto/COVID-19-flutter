@@ -24,7 +24,7 @@ class DettaglioRegione extends StatelessWidget {
         appBar: AppBar(
           title: Text(this.regione.denominazioneRegione),
         ),
-        body: Column(
+        body: ListView(
           children: [
             ...List.generate(_datiGiornalieri.length, (index) {
               String key = _datiGiornalieri.keys.elementAt(index);
@@ -73,7 +73,6 @@ class DettaglioRegione extends StatelessWidget {
     return Card(
         child: Container(
       width: 1000,
-      height: 100,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           gradient: LinearGradient(
