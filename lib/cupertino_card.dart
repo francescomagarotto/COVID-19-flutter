@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_app/regione.dart';
-import 'regione.dart';
+import 'package:flutter_app/models/regione.dart';
+import 'models/regione.dart';
 import 'dettaglio_regione.dart';
 
 class CupertinoCard extends StatelessWidget {

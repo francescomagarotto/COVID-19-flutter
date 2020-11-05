@@ -1,19 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/regione.dart';
+import 'package:flutter_app/models/regione.dart';
 import 'package:flutter_app/cupertino_card.dart';
+import 'package:flutter_app/setup_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'controllers/regioni_controller.dart';
 
 void main() {
   runApp(MyApp());
-}
-
-Future<List<Regione>> fetchDatiRegione(http.Client client) async {
-  final response = await client.get(
-      'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni-latest.json');
-
-  return compute(regioneFromJson, response.body);
 }
 
 class MyApp extends StatelessWidget {
@@ -23,23 +20,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'COVID-19 Country Data',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primaryColor: Colors.red,
-
-        // Define the default font family.
+        primarySwatch: Colors.red,
         fontFamily: 'Georgia',
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: 'COVID-19'),
     );
@@ -65,6 +47,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<String> _regioniFavorite;
+
+  void initState() {
+    super.initState();
+    _getPreferences();
+  }
+
+  _getPreferences() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.containsKey("regioniFavorite");
+    setState(() {
+      _regioniFavorite =
+          sharedPreferences.getStringList("regioniFavorite") ?? [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -72,17 +70,51 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: FutureBuilder<List<Regione>>(
-          future: fetchDatiRegione(http.Client()),
+        drawer: Drawer(
+          // Add a ListView to the drawer. This ensures the user can scroll
+          // through the options in the drawer if there isn't enough vertical
+          // space to fit everything.
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text(
+                  'Impostazioni',
+                  style: TextStyle(color: Colors.white, fontSize: 23),
+                  textAlign: TextAlign.center,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue[700],
+                ),
+              ),
+              ListTile(
+                title: Text('Preferiti'),
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SetupPage()));
+                },
+              ),
+            ],
+          ),
+        ),
+        body: (FutureBuilder<List<Regione>>(
+          future: RegioniController.fetchDatiRegione(http.Client()),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error);
             if (snapshot.hasData) {
-              return ListaRegioni(regioni: snapshot.data);
+              return (_regioniFavorite != null || _regioniFavorite == [])
+                  ? Center(
+                      child: Text("Nessun preferito selezionato"),
+                    )
+                  : ListaRegioni(
+                      regioni: snapshot.data.where((regione) => _regioniFavorite
+                          .contains(regione.denominazioneRegione)));
             } else {
               return Center(child: CircularProgressIndicator());
             }
           },
-        ),
+        )),
       ),
     );
   }
